@@ -1,10 +1,15 @@
 package main
 
 import (
-    "fmt"
-    "math"
-    "math/rand"
-    "time"
+	"bufio"
+	"flag"
+	"fmt"
+	"math"
+	"math/rand"
+	"os"
+	"regexp"
+	"strings"
+	"time"
 )
 
 // --- Main ---
@@ -20,6 +25,14 @@ func runDemo() {
     // testTriEtRecherche()
     // testVecteurs()
     // testJeuDeLaVie()
+    // testVerifTelephone()
+    // testVerifEmail()
+    //testLivres()
+    //testTableauxDynamiques()
+    //testHelloWorldArg()
+    //testHelloWorldPrompt()
+    //testBonjourLangue()
+    testBonjourDateHeure()
 }
 
 // --- 1. Premiers pas ---
@@ -327,4 +340,281 @@ func testListeChainee() {
     list.Afficher()
     list.InsertAtPosition(5, 10)
     list.Afficher() // Affiche: 1 -> 4 -> 3 -> 5 -> nil
+}
+
+// --- 5. Regex ---
+func verifierTelephone(telephone string) bool {
+    regex := `^(0|\+33)([ .-]?[1-9])([ .-]?[0-9]){8}$`
+    match, _ := regexp.MatchString(regex, telephone)
+    return match
+}
+
+func verifierEmail(email string) bool {
+    regex := `^[a-zA-Z0-9]+(?:\.[a-zA-Z0-9]+)*@[a-zA-Z0-9]+\.(fr|org|com)$`
+    match, _ := regexp.MatchString(regex, email)
+    return match
+}
+
+func testVerifTelephone() {
+    numeros := []string{
+        "0123456789",         // OK
+        "01 23 45 67 89",     // OK
+        "01.23.45.67.89",     // OK
+        "+33 1 23 45 67 89",  // OK
+        "01--23--45--67--89", // KO
+        "01..23..45..67..89", // KO
+        "012345",             // KO
+        "+33123456789",       // OK
+    }
+
+    fmt.Println("--- Test Téléphones ---")
+    for _, num := range numeros {
+        fmt.Printf("%-20s -> %v\n", num, verifierTelephone(num))
+    }
+}
+
+func testVerifEmail() {
+    emails := []string{
+        "prenom.nom@email.fr",   // OK
+        "user123@site.com",      // OK
+        "utilisateur@domaine.org", // OK
+        ".user@site.com",        // KO
+        "user.@site.com",        // KO
+        "user..name@site.fr",    // KO
+        "user@site.net",         // KO
+        "user@site",             // KO
+        "user@.com",             // KO
+    }
+
+    fmt.Println("--- Test Emails ---")
+    for _, email := range emails {
+        fmt.Printf("%-30s -> %v\n", email, verifierEmail(email))
+    }
+}
+
+
+// --- 6. Les livres ---
+type Livre struct {
+    ID          int
+    Titre       string
+    Auteur      string
+    Description string
+}
+
+func NouveauLivre(id int, titre, auteur, description string) Livre {
+    return Livre{
+        ID:          id,
+        Titre:       titre,
+        Auteur:      auteur,
+        Description: description,
+    }
+}
+
+func AfficherDetails(l Livre) {
+    fmt.Printf("ID: %d\nTitre: %s\nAuteur: %s\nDescription: %s\n\n", l.ID, l.Titre, l.Auteur, l.Description)
+}
+
+type Bibliotheque struct {
+    Livres []Livre
+}
+
+func (b *Bibliotheque) AjouterLivre(l Livre) {
+    b.Livres = append(b.Livres, l)
+}
+
+func (b Bibliotheque) AfficherLivres() {
+    for _, livre := range b.Livres {
+        AfficherDetails(livre)
+    }
+}
+
+func (b Bibliotheque) RechercherParID(id int) *Livre {
+    for _, livre := range b.Livres {
+        if livre.ID == id {
+            return &livre
+        }
+    }
+    return nil
+}
+
+func testLivres() {
+    fmt.Println("--- Test Livres ---")
+    livre1 := NouveauLivre(1, "1984", "George Orwell", "Dystopie sur une société totalitaire.")
+    livre2 := NouveauLivre(2, "Le Petit Prince", "Antoine de Saint-Exupéry", "Conte philosophique.")
+
+    biblio := Bibliotheque{}
+    biblio.AjouterLivre(livre1)
+    biblio.AjouterLivre(livre2)
+
+    fmt.Println("Tous les livres dans la bibliothèque :")
+    biblio.AfficherLivres()
+
+    fmt.Println("Recherche du livre avec ID 2 :")
+    livreTrouve := biblio.RechercherParID(2)
+    if livreTrouve != nil {
+        AfficherDetails(*livreTrouve)
+    } else {
+        fmt.Println("Livre non trouvé.")
+    }
+}
+
+// --- 7. Interface du tableau dynamique ---
+type TableauDynamique interface {
+    Ajouter(valeur interface{})
+    Obtenir(index int) interface{}
+}
+
+type TableauDoublement struct {
+    donnees []interface{}
+    taille  int
+    capacite int
+}
+
+func NouveauTableauDoublement() *TableauDoublement {
+    return &TableauDoublement{
+        donnees: make([]interface{}, 0, 1),
+        taille:  0,
+        capacite: 1,
+    }
+}
+
+func (t *TableauDoublement) Ajouter(valeur interface{}) {
+    if t.taille >= t.capacite {
+        t.capacite *= 2
+        nouveau := make([]interface{}, t.taille, t.capacite)
+        copy(nouveau, t.donnees)
+        t.donnees = nouveau
+    }
+    t.donnees = append(t.donnees, valeur)
+    t.taille++
+}
+
+func (t *TableauDoublement) Obtenir(index int) interface{} {
+    if index >= 0 && index < t.taille {
+        return t.donnees[index]
+    }
+    return nil
+}
+
+type TableauAgrandissementUnitaire struct {
+    donnees []interface{}
+    taille  int
+}
+
+func NouveauTableauAgrandissementUnitaire() *TableauAgrandissementUnitaire {
+    return &TableauAgrandissementUnitaire{
+        donnees: make([]interface{}, 0),
+        taille:  0,
+    }
+}
+
+func (t *TableauAgrandissementUnitaire) Ajouter(valeur interface{}) {
+    nouveau := make([]interface{}, t.taille+1)
+    copy(nouveau, t.donnees)
+    nouveau[t.taille] = valeur
+    t.donnees = nouveau
+    t.taille++
+}
+
+func (t *TableauAgrandissementUnitaire) Obtenir(index int) interface{} {
+    if index >= 0 && index < t.taille {
+        return t.donnees[index]
+    }
+    return nil
+}
+
+func testTableauxDynamiques() {
+    fmt.Println("--- Test TableauDoublement ---")
+    tab1 := NouveauTableauDoublement()
+    for i := 0; i < 10; i++ {
+        tab1.Ajouter(i * 10)
+        fmt.Printf("Ajouté %d, taille: %d, capacité: %d\n", i*10, tab1.taille, tab1.capacite)
+    }
+    fmt.Println("Valeurs dans TableauDoublement :")
+    for i := 0; i < tab1.taille; i++ {
+        fmt.Println(tab1.Obtenir(i))
+    }
+
+    fmt.Println("\n--- Test TableauAgrandissementUnitaire ---")
+    tab2 := NouveauTableauAgrandissementUnitaire()
+    for i := 0; i < 10; i++ {
+        tab2.Ajouter(i * 100)
+        fmt.Printf("Ajouté %d, taille: %d\n", i*100, tab2.taille)
+    }
+    fmt.Println("Valeurs dans TableauAgrandissementUnitaire :")
+    for i := 0; i < tab2.taille; i++ {
+        fmt.Println(tab2.Obtenir(i))
+    }
+}
+
+// --- 8. Nuances de “Hello world !” ---
+func helloWorld(){
+    fmt.Println("Hello world !")
+}
+
+func testHelloWorldArg() {
+    nom := flag.String("nom", "inconnu", "Nom de l'utilisateur")
+    flag.Parse()
+    fmt.Printf("Hello %s !\n", *nom)
+}
+
+func testHelloWorldPrompt() {
+    reader := bufio.NewReader(os.Stdin)
+    fmt.Print("Entrez votre nom : ")
+    nom, _ := reader.ReadString('\n')
+    nom = strings.TrimSpace(nom)
+    fmt.Printf("Bonjour %s !\n", nom)
+}
+
+
+func MessageParLangue(code string) string {
+    if code == "" {
+        return "Code langue vide."
+    }
+
+    messages := map[string]string{
+        "fr": "Bonjour !",
+        "en": "Hello!",
+        "es": "¡Hola!",
+        "de": "Hallo!",
+        "it": "Ciao!",
+        "pt": "Olá!",
+        "ru": "Привет!",
+        "zh": "你好！",
+        "ja": "こんにちは！",
+        "kv": "Видза оланныд!",
+        "ar": "مرحبا!",
+    }
+
+    if msg, ok := messages[code]; ok {
+        return msg
+    }
+    return fmt.Sprintf("Code langue inconnu : '%s'", code)
+}
+
+func testBonjourLangue() {
+    code := flag.String("lang", "kv", "Code langue (ex: fr, en, es, de, it)")
+    flag.Parse()
+    fmt.Println(MessageParLangue(*code))
+}
+
+func MessageSelonHeure() string {
+    now := time.Now()
+    heure := now.Hour()
+    var moment string
+    switch {
+    case heure >= 5 && heure < 12:
+        moment = "matin"
+    case heure >= 12 && heure < 17:
+        moment = "après-midi"
+    case heure >= 17 && heure < 21:
+        moment = "soir"
+    default:
+        moment = "nuit"
+    }
+    return fmt.Sprintf("Nous sommes le %s. Bonne %s !", now.Format("lundi 2 janvier 2006"), moment)
+}
+
+func testBonjourDateHeure() {
+    fmt.Println(MessageSelonHeure())
 }

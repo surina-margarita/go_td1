@@ -1,5 +1,9 @@
 # go_td1
 
+## Explication générale
+
+Pour tester le code, décommentez les appels de fonctions dans la fonction `runDemo()` du fichier `TD1.go`.
+
 ## Exercice 4.3
 
 ### 1. Quelle est la différence entre une liste chaînée simple et une liste chaînée double ?
