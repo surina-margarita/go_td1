@@ -22,7 +22,7 @@ func runDemo() {
     // testJeuDeLaVie()
 }
 
-// --- 1. Utilitaires mathématiques ---
+// --- 1. Premiers pas ---
 
 func estBissextile(annee int) bool {
     if annee%4 == 0 {
@@ -54,8 +54,6 @@ func listeNombrePremier(n int) []int {
     }
     return liste
 }
-
-// --- 2. Tri et recherche ---
 
 func genererTableauAleatoire(n int) []int {
     var liste []int
@@ -126,7 +124,7 @@ func testTriEtRecherche() {
     fmt.Println("Recherche :", index, trouvé)
 }
 
-// --- 3. Jeu de la vie ---
+// --- 2. Jeu de la vie ---
 
 func initGrille(n, m int) [][]int {
     grille := make([][]int, n)
@@ -196,7 +194,7 @@ func testJeuDeLaVie() {
     }
 }
 
-// --- 4. Vecteurs ---
+// --- 3. Vecteurs ---
 
 type vec2i struct {
     x, y int
@@ -248,7 +246,7 @@ func testVecteurs() {
     fmt.Println("Cross product:", produitVectorielVec2i(v1, v2))
 }
 
-// --- 5. Liste chaînée ---
+// --- 4. Liste chaînée ---
 
 type Node struct {
     Data int
