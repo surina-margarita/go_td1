@@ -21,4 +21,5 @@ Dans ce cas, la fonction Supprimer parcourra la liste jusqu'à la fin sans trouv
 - Suppression : O(n) dans le pire des cas, car il faut parcourir la liste pour trouver l'élément à supprimer.
 - Recherche : O(n) dans le pire des cas, car il faut parcourir la liste pour trouver l'élément recherché.
 
+____________________________________________
 Réalisé par Margarita Surina
